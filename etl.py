@@ -58,13 +58,24 @@ def process_log_data(spark, input_data, output_data):
     print("Imported {} records.".format(log_df.count()))
     
     # filter by actions for song plays
-    #df = 
-
+    log_df = log_df.filter(log_df.page == 'NextSong')
+    print('Filtered down to {} songplays'.format(log_df.count()))
+    
     # extract columns for users table    
-    #artists_table = 
+    users_df = log_df.select(log_df.userId.cast("int").alias('user_id'), \
+        log_df.firstName.alias('first_name'), \
+        log_df.lastName.alias('last_name'), \
+        log_df.gender, \
+        log_df.level)
+    print("Imported {} user records".format(users_df.count()))
+    users_df.printSchema()
+
+    # drop duplicate user records
+    users_df = users_df.dropDuplicates(['user_id'])
+    print("Duplicates dropped, {} remaining unique users".format(users_df.count()))
     
     # write users table to parquet files
-    #artists_table
+    #users_table
 
     # create timestamp column from original timestamp column
     #get_timestamp = udf()
