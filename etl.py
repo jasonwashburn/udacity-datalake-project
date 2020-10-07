@@ -2,8 +2,10 @@ import configparser
 from datetime import datetime
 import os
 from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
 from pyspark.sql.functions import udf, col
 from pyspark.sql.functions import year, month, dayofmonth, hour, weekofyear, date_format
+from pyspark.sql.functions import to_timestamp
 
 
 config = configparser.ConfigParser()
@@ -79,14 +81,20 @@ def process_log_data(spark, input_data, output_data):
 
     # create timestamp column from original timestamp column
     #get_timestamp = udf()
-    #df = 
+    log_df = log_df.withColumn('timestamp', to_timestamp(log_df.ts / 1000))
     
     # create datetime column from original timestamp column
     #get_datetime = udf()
     #df = 
     
     # extract columns to create time table
-    #time_table = 
+    df_time = log_df.select('timestamp', F.hour(log_df.timestamp).alias('hour'), F.dayofmonth(log_df.timestamp).alias('day'), \
+                    F.weekofyear(log_df.timestamp).alias('week'), F.month(log_df.timestamp).alias('month'), \
+                    F.year(log_df.timestamp).alias('year'), F.dayofweek(log_df.timestamp).alias('weekday'))
+
+    # drop duplicates
+    df_time = df_time.distinct()
+    df_time.printSchema()
     
     # write time table to parquet files partitioned by year and month
     #time_table
