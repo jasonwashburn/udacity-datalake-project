@@ -36,11 +36,14 @@ def process_song_data(spark, input_data, output_data):
     songs_df = songs_data.select("song_id", "title", "artist_id", "year", "duration")
     songs_df.printSchema()
     # write songs table to parquet files partitioned by year and artist
-    #songs_table
+    songs_df.write.mode('overwrite').parquet(output_data + 'songs/songs.parquet')
 
     # extract columns to create artists table
-    artists_df = songs_data.select("artist_id", "artist_name", "artist_location", "artist_latitude", \
-         "artist_longitude")
+    artists_df = songs_data.select(songs_data.artist_id, \
+                                    songs_data.artist_name.alias('name'), \
+                                    songs_data.artist_location.alias('location'), \
+                                    songs_data.artist_latitude.alias('latitude'), \
+                                    songs_data.artist_longitude.alias('longitude'))
     
     # drop duplicate artist records
     artists_df = artists_df.dropDuplicates(['artist_id'])
@@ -119,7 +122,7 @@ def process_log_data(spark, input_data, output_data):
                             joined_df.artist_id, \
                             joined_df.sessionId.alias('session_id'), \
                             joined_df.artist_location.alias('location'), \
-                            joined_df.userAgent)
+                            joined_df.userAgent.alias('user_agent'))
     song_plays.printSchema()
     song_plays.show(5)
 
@@ -127,7 +130,7 @@ def main():
     spark = create_spark_session()
     #input_data = "s3a://udacity-dend/"
     input_data = 'data/'
-    output_data = ""
+    output_data = "analytics/"
     
     process_song_data(spark, input_data, output_data)    
     process_log_data(spark, input_data, output_data)
