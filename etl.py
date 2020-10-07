@@ -45,10 +45,11 @@ def process_song_data(spark, input_data, output_data):
 def process_log_data(spark, input_data, output_data):
     print("Processing Log Data...")
     # get filepath to log data file
-    #log_data =
+    log_path = input_data + 'log-data/'
 
     # read log data file
-    #df = 
+    log_df = spark.read.json(log_path)
+    print("Imported {} records.".format(log_df.count()))
     
     # filter by actions for song plays
     #df = 
@@ -90,7 +91,7 @@ def main():
     output_data = ""
     
     process_song_data(spark, input_data, output_data)    
-    #process_log_data(spark, input_data, output_data)
+    process_log_data(spark, input_data, output_data)
 
 
 if __name__ == "__main__":
