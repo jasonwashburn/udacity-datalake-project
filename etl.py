@@ -88,7 +88,7 @@ def process_log_data(spark, input_data, output_data):
     #df = 
     
     # extract columns to create time table
-    df_time = log_df.select('timestamp', F.hour(log_df.timestamp).alias('hour'), F.dayofmonth(log_df.timestamp).alias('day'), \
+    df_time = log_df.select(log_df.ts.alias('start_time'), F.hour(log_df.timestamp).alias('hour'), F.dayofmonth(log_df.timestamp).alias('day'), \
                     F.weekofyear(log_df.timestamp).alias('week'), F.month(log_df.timestamp).alias('month'), \
                     F.year(log_df.timestamp).alias('year'), F.dayofweek(log_df.timestamp).alias('weekday'))
 
@@ -100,14 +100,28 @@ def process_log_data(spark, input_data, output_data):
     #time_table
 
     # read in song data to use for songplays table
-    #song_df = 
+    songs_path = input_data + 'song_data/*/*/*/*.json'
+    songs_data = spark.read.json(songs_path)
+    print("Imported {} song records...again".format(songs_data.count()))
 
     # extract columns from joined song and log datasets to create songplays table 
-    #songplays_table = 
-
+    joined_df = log_df.join(songs_data, ((log_df.song == songs_data.title) & \
+                        ((log_df.length == songs_data.duration) & \
+                        (log_df.artist == songs_data.artist_name))), how = 'full')
+    print("Joined Log and Song data.") 
+    joined_df.printSchema()
     # write songplays table to parquet files partitioned by year and month
     #songplays_table
-
+    song_plays = joined_df.select(joined_df.ts.alias('start_time'), \
+                            joined_df.userId.cast('int').alias('user_id'), \
+                            joined_df.level, \
+                            joined_df.song_id, \
+                            joined_df.artist_id, \
+                            joined_df.sessionId.alias('session_id'), \
+                            joined_df.artist_location.alias('location'), \
+                            joined_df.userAgent)
+    song_plays.printSchema()
+    song_plays.show(5)
 
 def main():
     spark = create_spark_session()
