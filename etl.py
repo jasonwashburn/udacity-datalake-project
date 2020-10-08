@@ -93,7 +93,7 @@ def process_log_data(spark, input_data, output_data):
     #df = 
     
     # extract columns to create time table
-    df_time = log_df.select(log_df.ts.alias('start_time'), F.hour(log_df.timestamp).alias('hour'), F.dayofmonth(log_df.timestamp).alias('day'), \
+    df_time = log_df.select(log_df.timestamp.alias('start_time'), F.hour(log_df.timestamp).alias('hour'), F.dayofmonth(log_df.timestamp).alias('day'), \
                     F.weekofyear(log_df.timestamp).alias('week'), F.month(log_df.timestamp).alias('month'), \
                     F.year(log_df.timestamp).alias('year'), F.dayofweek(log_df.timestamp).alias('weekday'))
 
@@ -118,7 +118,7 @@ def process_log_data(spark, input_data, output_data):
     joined_df.printSchema()
     
     # extract columns for songplays_table
-    song_plays = joined_df.select(joined_df.ts.alias('start_time'), \
+    song_plays = joined_df.select(joined_df.timestamp.alias('start_time'), \
                             joined_df.userId.cast('int').alias('user_id'), \
                             joined_df.level, \
                             joined_df.song_id, \
@@ -130,7 +130,7 @@ def process_log_data(spark, input_data, output_data):
     song_plays.show(5)
 
     # write songplays table to parquet files partitioned by year and month
-    #song_plays.write.partitionBy('year', 'month').mode('overwrite').parquet(output_data + 'songplays')
+    #song_plays.write.partitionBy(year(song), 'month').mode('overwrite').parquet(output_data + 'songplays')
 
 
 def main():
