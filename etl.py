@@ -81,7 +81,8 @@ def process_log_data(spark, input_data, output_data):
     print("Duplicates dropped, {} remaining unique users".format(users_df.count()))
     
     # write users table to parquet files
-    #users_table
+    users_df.write.mode('overwrite').parquet(output_data + 'users')
+
 
     # create timestamp column from original timestamp column
     #get_timestamp = udf()
@@ -101,21 +102,22 @@ def process_log_data(spark, input_data, output_data):
     df_time.printSchema()
     
     # write time table to parquet files partitioned by year and month
-    #time_table
+    df_time.write.partitionBy('year', 'month').mode('overwrite').parquet(output_data + 'time')
+
 
     # read in song data to use for songplays table
     songs_path = input_data + 'song_data/*/*/*/*.json'
     songs_data = spark.read.json(songs_path)
     print("Imported {} song records...again".format(songs_data.count()))
 
-    # extract columns from joined song and log datasets to create songplays table 
+    # join song and log datasets to create songplays table 
     joined_df = log_df.join(songs_data, ((log_df.song == songs_data.title) & \
                         ((log_df.length == songs_data.duration) & \
                         (log_df.artist == songs_data.artist_name))), how = 'full')
     print("Joined Log and Song data.") 
     joined_df.printSchema()
-    # write songplays table to parquet files partitioned by year and month
-    #songplays_table
+    
+    # extract columns for songplays_table
     song_plays = joined_df.select(joined_df.ts.alias('start_time'), \
                             joined_df.userId.cast('int').alias('user_id'), \
                             joined_df.level, \
@@ -126,6 +128,10 @@ def process_log_data(spark, input_data, output_data):
                             joined_df.userAgent.alias('user_agent'))
     song_plays.printSchema()
     song_plays.show(5)
+
+    # write songplays table to parquet files partitioned by year and month
+    #song_plays.write.partitionBy('year', 'month').mode('overwrite').parquet(output_data + 'songplays')
+
 
 def main():
     spark = create_spark_session()
