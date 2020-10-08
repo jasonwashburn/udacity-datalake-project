@@ -1,2 +1,3 @@
 *.ipynb
 analytics/
+.DS_Store
