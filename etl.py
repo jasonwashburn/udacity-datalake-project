@@ -50,7 +50,8 @@ def process_song_data(spark, input_data, output_data):
     artists_df.printSchema()
     
     # write artists table to parquet files
-    #artists_table
+    artists_df.write.mode('overwrite').parquet(output_data + 'artists')
+
 
 
 def process_log_data(spark, input_data, output_data):
