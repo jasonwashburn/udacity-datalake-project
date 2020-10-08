@@ -24,6 +24,10 @@ that parses dl.cfg for AWS ID and secret key to enable access to S3.
 Contains configuration data needed to connect to S3 if script is running on a 
 local machine (ie: for development)
 
+### data/
+Contains a small sample of the song and log data used for local development 
+and testing.
+
 ## Database Design
 The database design schema consists of the following tables:
 
