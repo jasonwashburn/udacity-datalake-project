@@ -116,7 +116,11 @@ def process_log_data(spark, input_data, output_data):
                         (log_df.artist == songs_data.artist_name))), how = 'full')
     print("Joined Log and Song data.") 
     joined_df.printSchema()
-    
+
+    # join joined_df with time table to provide 
+    joined_df = joined_df.withColumnRenamed('year', 'album_year').join(df_time, joined_df.timestamp == df_time.start_time)
+    joined_df.printSchema()
+
     # extract columns for songplays_table
     song_plays = joined_df.select(joined_df.timestamp.alias('start_time'), \
                             joined_df.userId.cast('int').alias('user_id'), \
@@ -125,12 +129,15 @@ def process_log_data(spark, input_data, output_data):
                             joined_df.artist_id, \
                             joined_df.sessionId.alias('session_id'), \
                             joined_df.artist_location.alias('location'), \
-                            joined_df.userAgent.alias('user_agent'))
+                            joined_df.userAgent.alias('user_agent'), \
+                            joined_df.month, \
+                            joined_df.year)
+
     song_plays.printSchema()
     song_plays.show(5)
 
     # write songplays table to parquet files partitioned by year and month
-    #song_plays.write.partitionBy(year(song), 'month').mode('overwrite').parquet(output_data + 'songplays')
+    song_plays.write.partitionBy('year', 'month').mode('overwrite').parquet(output_data + 'songplays')
 
 
 def main():
